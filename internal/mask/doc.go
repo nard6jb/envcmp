@@ -1,14 +1,13 @@
-// Package mask provides secret-detection and value-masking helpers for
-// environment variable keys and maps.
+// Package mask provides utilities for detecting and masking sensitive
+// environment variable values based on key name heuristics.
 //
-// Keys are considered sensitive when their names contain well-known
-// substrings such as SECRET, PASSWORD, TOKEN, API_KEY, AUTH, PRIVATE,
-// or CREDENTIAL (case-insensitive).
+// Keys containing substrings such as "SECRET", "PASSWORD", "TOKEN", "KEY",
+// or "PRIVATE" (case-insensitive) are considered sensitive and their values
+// will be replaced with a redacted placeholder when masking is enabled.
 //
-// Typical usage:
+// Example usage:
 //
-//	masked := mask.MaskMap(parsedEnv)
-//	fmt.Println(masked["DB_PASSWORD"]) // prints ********
-//
-// The package is intentionally stateless and safe for concurrent use.
+//	if mask.IsSensitive("DB_PASSWORD") {
+//		fmt.Println(mask.MaskValue("DB_PASSWORD", "s3cr3t"))
+//	}
 package mask
