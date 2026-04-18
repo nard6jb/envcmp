@@ -1,42 +1,49 @@
-// Package diff provides functionality to compare two parsed .env files
-// and report missing, extra, and changed keys between them.
+// Package diff compares two parsed env maps and returns a list of differences.
 package diff
 
-// Result holds the diff outcome between two env maps.
+// Status describes the kind of difference found for a key.
+type Status string
+
+const (
+	// Missing means the key exists in the left env but not the right.
+	Missing Status = "missing"
+	// Extra means the key exists in the right env but not the left.
+	Extra Status = "extra"
+	// Changed means the key exists in both but with different values.
+	Changed Status = "changed"
+)
+
+// Result holds the diff outcome for a single key.
 type Result struct {
-	MissingInRight []string            // keys present in left but not in right
-	MissingInLeft  []string            // keys present in right but not in left
-	Changed        map[string][2]string // key -> [leftVal, rightVal]
+	Key        string
+	Status     Status
+	LeftValue  string
+	RightValue string
 }
 
-// Compare takes two env maps (key->value) and returns a Result describing
-// their differences.
-func Compare(left, right map[string]string) Result {
-	res := Result{
-		Changed: make(map[string][2]string),
-	}
+// Compare returns the differences between left and right env maps.
+func Compare(left, right map[string]string) []Result {
+	var results []Result
 
 	for k, lv := range left {
 		rv, ok := right[k]
 		if !ok {
-			res.MissingInRight = append(res.MissingInRight, k)
-			continue
-		}
-		if lv != rv {
-			res.Changed[k] = [2]string{lv, rv}
+			results = append(results, Result{Key: k, Status: Missing, LeftValue: lv})
+		} else if lv != rv {
+			results = append(results, Result{Key: k, Status: Changed, LeftValue: lv, RightValue: rv})
 		}
 	}
 
-	for k := range right {
+	for k, rv := range right {
 		if _, ok := left[k]; !ok {
-			res.MissingInLeft = append(res.MissingInLeft, k)
+			results = append(results, Result{Key: k, Status: Extra, RightValue: rv})
 		}
 	}
 
-	return res
+	return results
 }
 
-// HasDiff returns true if the Result contains any differences.
-func (r Result) HasDiff() bool {
-	return len(r.MissingInRight) > 0 || len(r.MissingInLeft) > 0 || len(r.Changed) > 0
+// HasDiff returns true if any differences exist.
+func HasDiff(results []Result) bool {
+	return len(results) > 0
 }
