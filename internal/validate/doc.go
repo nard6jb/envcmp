@@ -5,4 +5,14 @@
 //
 // A validation result is considered Valid only when no required keys are
 // missing. Extra keys are reported as informational warnings.
+//
+// Basic usage:
+//
+//	 result, err := validate.Compare(referencePath, targetPath)
+//	 if err != nil {
+//	 	log.Fatal(err)
+//	 }
+//	 if !result.Valid() {
+//	 	fmt.Println("Missing keys:", result.Missing)
+//	 }
 package validate
