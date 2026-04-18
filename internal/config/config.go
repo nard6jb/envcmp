@@ -1,14 +1,14 @@
-// Package config handles CLI configuration and flag parsing for envcmp.
+// Package config parses CLI arguments into a structured Config.
 package config
 
 import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
+	"strings"
 )
 
-// Mode represents the operating mode of the CLI.
+// Mode represents the operating mode of envcmp.
 type Mode string
 
 const (
@@ -16,43 +16,66 @@ const (
 	ModeValidate Mode = "validate"
 )
 
-// Config holds the resolved CLI configuration.
+// Config holds all parsed CLI configuration.
 type Config struct {
-	Mode      Mode
-	FileA     string
-	FileB     string
-	MaskKeys  bool
-	NoColor   bool
+	Mode     Mode
+	Files    []string
+	NoColor  bool
+	Prefix   string
+	Exclude  []string
+	OnlyKeys []string
 }
 
-// Parse parses os.Args and returns a Config or an error.
+// Parse reads os.Args and returns a Config or an error.
 func Parse(args []string) (*Config, error) {
 	fs := flag.NewFlagSet("envcmp", flag.ContinueOnError)
-	fs.SetOutput(os.Stderr)
 
-	mode := fs.String("mode", "diff", "operating mode: diff | validate")
-	mask := fs.Bool("mask", true, "mask sensitive values in output")
 	noColor := fs.Bool("no-color", false, "disable colored output")
+	prefix := fs.String("prefix", "", "only include keys with this prefix")
+	exclude := fs.String("exclude", "", "comma-separated keys to exclude")
+	onlyKeys := fs.String("keys", "", "comma-separated keys to include exclusively")
 
 	if err := fs.Parse(args); err != nil {
 		return nil, err
 	}
 
-	positional := fs.Args()
-	if len(positional) < 2 {
-		return nil, errors.New("usage: envcmp [flags] <fileA> <fileB>")
+	remaining := fs.Args()
+	if len(remaining) < 2 {
+		return nil, errors.New("usage: envcmp <mode> <file1> [file2]")
 	}
 
-	m := Mode(*mode)
-	if m != ModeDiff && m != ModeValidate {
-		return nil, fmt.Errorf("unknown mode %q: must be diff or validate", *mode)
+	mode := Mode(remaining[0])
+	if mode != ModeDiff && mode != ModeValidate {
+		return nil, fmt.Errorf("unknown mode %q: use 'diff' or 'validate'", mode)
 	}
 
-	return &Config{
-		Mode:     m,
-		FileA:    positional[0],
-		FileB:    positional[1],
-		MaskKeys: *mask,
-		NoColor:  *noColor,
-	}, nil
+	files := remaining[1:]
+	if mode == ModeDiff && len(files) < 2 {
+		return nil, errors.New("diff mode requires two files")
+	}
+
+	cfg := &Config{
+		Mode:    mode,
+		Files:   files,
+		NoColor: *noColor,
+		Prefix:  *prefix,
+	}
+	if *exclude != "" {
+		cfg.Exclude = splitCSV(*exclude)
+	}
+	if *onlyKeys != "" {
+		cfg.OnlyKeys = splitCSV(*onlyKeys)
+	}
+	return cfg, nil
+}
+
+func splitCSV(s string) []string {
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if t := strings.TrimSpace(p); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
 }
