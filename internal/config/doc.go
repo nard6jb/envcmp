@@ -1,14 +1,9 @@
-// Package config provides CLI flag parsing and configuration resolution
-// for the envcmp tool.
+// Package config parses and validates CLI arguments for envcmp.
 //
-// It exposes a single Parse function that accepts a slice of string arguments
-// (typically os.Args[1:]) and returns a populated Config struct.
+// It supports two modes of operation:
 //
-// Supported modes:
-//   - diff:     compare two .env files and report differences
-//   - validate: check a .env file against a reference for missing/extra keys
+//	- diff:     compare two .env files and report differences
+//	- validate: check a target .env file against a reference for missing keys
 //
-// Example:
-//
-//	cfg, err := config.Parse(os.Args[1:])
+// Flags such as --no-color and --mask-secrets are also handled here.
 package config
