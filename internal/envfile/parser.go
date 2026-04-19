@@ -65,3 +65,13 @@ func Parse(path string) (*EnvFile, error) {
 
 	return env, nil
 }
+
+// Keys returns a sorted list of all keys in the EnvFile.
+func (e *EnvFile) Keys() []string {
+	keys := make([]string, 0, len(e.Entries))
+	for k := range e.Entries {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
