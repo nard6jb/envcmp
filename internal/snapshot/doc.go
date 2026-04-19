@@ -1,9 +1,9 @@
 // Package snapshot provides functionality for saving and loading .env file
 // snapshots to disk, enabling drift detection between a known-good baseline
-// and the current environment state.
+// and the current state of an environment file.
 //
-// Snapshots are stored as JSON files with restricted file permissions (0600)
-// to prevent accidental exposure of sensitive values.
+// Snapshots are stored as JSON files with restricted permissions (0600) to
+// prevent accidental exposure of sensitive values.
 //
 // Basic usage:
 //
