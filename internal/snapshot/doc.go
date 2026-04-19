@@ -1,12 +1,15 @@
-// Package snapshot provides functionality for saving and loading
-// environment file snapshots to disk in JSON format.
+// Package snapshot provides functionality for saving and loading .env file
+// snapshots to disk, enabling drift detection between a known-good baseline
+// and the current environment state.
 //
-// Snapshots allow users to capture the state of an environment at a
-// point in time and later compare it against a current environment
-// to detect drift or unintended changes.
+// Snapshots are stored as JSON files with restricted file permissions (0600)
+// to prevent accidental exposure of sensitive values.
 //
-// Usage:
+// Basic usage:
 //
+//	// Save a snapshot
 //	err := snapshot.Save("/path/to/snapshot.json", envMap)
-//	envMap, err := snapshot.Load("/path/to/snapshot.json")
+//
+//	// Load and compare
+//	diffs, err := snapshot.CompareEnvAgainstSnapshot("/path/to/snapshot.json", envMap)
 package snapshot
