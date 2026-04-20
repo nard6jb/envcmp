@@ -38,6 +38,11 @@ type Issue struct {
 	Message string
 }
 
+// String returns a human-readable representation of the issue.
+func (i Issue) String() string {
+	return fmt.Sprintf("%s: %s", i.Key, i.Message)
+}
+
 var urlPattern = regexp.MustCompile(`^https?://[^\s]+$`)
 
 // Validate checks an env map against the schema and returns any issues found.
