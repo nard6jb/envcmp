@@ -44,6 +44,17 @@ func LoadLog(path string) (*Log, error) {
 	return load(path)
 }
 
+// Filter returns a new Log containing only entries that satisfy the predicate fn.
+func (l *Log) Filter(fn func(Entry) bool) *Log {
+	result := &Log{}
+	for _, e := range l.Entries {
+		if fn(e) {
+			result.Entries = append(result.Entries, e)
+		}
+	}
+	return result
+}
+
 func load(path string) (*Log, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
