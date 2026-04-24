@@ -63,3 +63,10 @@ func TestIssue_String(t *testing.T) {
 		t.Error("expected non-empty string")
 	}
 }
+
+func TestCheck_EmptyInput(t *testing.T) {
+	issues := lint.Check(entries())
+	if len(issues) != 0 {
+		t.Fatalf("expected no issues for empty input, got %d: %v", len(issues), issues)
+	}
+}
