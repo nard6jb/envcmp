@@ -14,9 +14,9 @@ func TestSaveAndLoad_RoundTrip(t *testing.T) {
 	path := filepath.Join(dir, "snap.json")
 
 	entries := map[string]string{
-		"APP_ENV":  "production",
-		"DB_HOST":  "localhost",
-		"API_KEY":  "secret123",
+		"APP_ENV": "production",
+		"DB_HOST": "localhost",
+		"API_KEY": "secret123",
 	}
 
 	if err := snapshot.Save(path, ".env.prod", entries); err != nil {
@@ -83,5 +83,27 @@ func TestSave_CreatesFileWithRestrictedPerms(t *testing.T) {
 
 	if perm := info.Mode().Perm(); perm != 0o600 {
 		t.Errorf("expected perm 0600, got %o", perm)
+	}
+}
+
+func TestSave_EmptyEntries(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "empty.json")
+
+	if err := snapshot.Save(path, ".env.empty", map[string]string{}); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+
+	snap, err := snapshot.Load(path)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+
+	if len(snap.Entries) != 0 {
+		t.Errorf("expected empty entries, got %d entries", len(snap.Entries))
+	}
+
+	if snap.Source != ".env.empty" {
+		t.Errorf("expected source .env.empty, got %s", snap.Source)
 	}
 }
